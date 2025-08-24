@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film Production Incentives | Interactive Dashboard</title>
+    <title>Global Film Production Incentives | Interactive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -63,7 +63,7 @@
         
         <header class="text-center my-8 md:my-12">
             <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-tight">Incentives Dashboard</h1>
-            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto"><p>Prepared for Your Review</p>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">For Your Review</p>
         </header>
 
         <nav id="jurisdiction-selector" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
@@ -72,7 +72,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <section id="deep-dive-section" class="lg:col-span-2 card rounded-lg shadow-sm p-6">
-                <h2 class="text-2xl font-bold mb-4 accent-text">Select a Jurisdiction for a Deep Dive</h2>
+                <h2 class="text-2xl font-bold mb-4 accent-text">Select an area for a Deep Dive</h2>
                 <div id="details-content" class="space-y-6 text-gray-700">
                     <p>Click on a country or state above to load its detailed incentive profile, including the type of incentive, amount, qualifying formats, key criteria, and application process.</p>
                 </div>
@@ -116,7 +116,7 @@
         </section>
 
         <footer class="text-center mt-16 mb-8 border-t pt-8 text-gray-500">
-            <p></p>
+            <p>&copy; 2025 Film Finance Analytics. Data synthesized from "An Expert Analysis of Global Film Production Incentives."</p>
         </footer>
 
     </main>
@@ -130,8 +130,7 @@
                 formats: 'Feature films, TV drama, documentaries, animation, VFX. A 20% incentive for unscripted productions is pending EU approval.',
                 criteria: 'Requires a cultural certificate from the Department of Culture (passing both Cultural and Industry Development Tests). Minimum spend of €125,000. Must be an Irish resident SPV.',
                 process: 'Two-stage process: cultural certification then claim submission. A significant 90% early payment is available, with the final 10% paid upon project delivery.',
-                philosophy: 'Cultural',
-                sourceUrl: 'https://example.com/ireland-report'
+                philosophy: 'Cultural'
             },
             'Malta': {
                 flag: '🇲🇹',
@@ -140,18 +139,16 @@
                 formats: 'Feature films, TV series, documentaries, animation, VFX. Excludes commercials and reality TV.',
                 criteria: 'Requires passing a cultural test. Minimum spend of €100,000 in Malta, with a total budget over €200,000. Must engage a local production service company.',
                 process: 'Application submitted to Malta Film Commission 30 working days before photography. A 10% advance is possible, with the balance paid after audit upon completion.',
-                philosophy: 'Cultural',
-                sourceUrl: 'https://example.com/malta-report'
+                philosophy: 'Cultural'
             },
             'UK': {
-                flag: '🇬🇧',
+                flag: '🇬�',
                 type: 'Taxable Credit (AVEC)',
                 amount: 'Standard net credit of 25.5%. A new Independent Film Tax Credit (IFTC) offers a net credit of 39.75% for films with budgets up to £23.5 million. A VFX uplift provides a 29.25% net rate.',
                 formats: 'Feature films (with theatrical release), high-end TV, animation, and children\'s television.',
                 criteria: 'Must be certified as "British" by passing a Cultural Test (18/35 points) or be an official co-production. Minimum 10% of core expenditure must be in the UK.',
                 process: 'Productions must claim under the new AVEC system from April 2025. Involves applying to the BFI for cultural certification, then claiming on a Corporation Tax return with HMRC.',
-                philosophy: 'Cultural',
-                sourceUrl: 'https://example.com/uk-report'
+                philosophy: 'Cultural'
             },
             'California': {
                 flag: '🇺🇸',
@@ -160,8 +157,7 @@
                 formats: 'Broadened eligibility includes animated films, multi-camera sitcoms, and short-episode TV shows. Minimum spend of $1 million.',
                 criteria: 'The primary criterion is the "jobs ratio test," ranking projects based on their potential for job creation. No cultural test required.',
                 process: 'Highly competitive application process via an online portal during specific, narrow application windows. Projects are ranked by their jobs ratio score to receive an allocation.',
-                philosophy: 'Economic',
-                sourceUrl: 'https://example.com/california-report'
+                philosophy: 'Economic'
             },
             'Australia': {
                 flag: '🇦🇺',
@@ -170,8 +166,7 @@
                 formats: 'Feature films, telemovies, TV series, documentaries, and animation.',
                 criteria: 'Producer Offset requires "Significant Australian Content." Location Offset requires a minimum spend of A$20 million. PDV Offset requires a minimum A$500,000 spend on Australian PDV services.',
                 process: 'Applications for certificates can be made anytime. The offset is claimed as part of the company\'s annual tax return, with payment typically within four weeks of lodgement.',
-                philosophy: 'Economic',
-                sourceUrl: 'https://example.com/australia-report'
+                philosophy: 'Economic'
             },
             'Croatia': {
                 flag: '🇭🇷',
@@ -180,8 +175,7 @@
                 formats: 'Feature films, TV drama, documentaries, and animation. Excludes commercials and reality TV.',
                 criteria: 'Requires a Cultural Test. Minimum spend varies by format (e.g., €250,000 for features). Requires employment of local trainees for larger projects.',
                 process: 'First-come, first-served application basis. Application must be submitted to the Croatian Audiovisual Centre prior to production. Rebate is paid out after project completion and audit.',
-                philosophy: 'Cultural',
-                sourceUrl: 'https://example.com/croatia-report'
+                philosophy: 'Cultural'
             }
         };
 
@@ -239,13 +233,6 @@
                     <div>
                         <h4 class="font-bold text-lg accent-text">Application Process/Timeline</h4>
                         <p>${data.process}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-lg accent-text">Source Report</h4>
-                        <a href="${data.sourceUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-                            View Full Report
-                            <span class="ml-1">🔗</span>
-                        </a>
                     </div>
                 </div>
             `;
@@ -354,3 +341,4 @@
     </script>
 </body>
 </html>
+�
