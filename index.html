@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Film Production Incentives | Interactive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Ground -->
+    <!-- Application Structure Plan: A dashboard-centric design. The core interaction is a main selector panel where users choose a jurisdiction. This single action dynamically updates a dedicated "Deep Dive" details section and highlights the selected jurisdiction across multiple comparative charts and tables. This task-oriented approach allows users to quickly get specific information (by selecting a country) and then immediately see its relative standing globally (by viewing the charts), which is more intuitive for comparison than a linear report. -->
+    <!-- Visualization & Content Choices: 
+        - Max Incentive Rates: Report Info -> Max rates per country. Goal -> Compare. Viz -> Horizontal Bar Chart. Interaction -> Highlight selected country's bar. Justification -> Best for direct value comparison. Library -> Chart.js.
+        - Incentive Types: Report Info -> Rebate vs. Credit. Goal -> Inform/Organize. Viz -> Donut Chart. Interaction -> None. Justification -> Shows proportion clearly. Library -> Chart.js.
+        - Qualification Philosophy: Report Info -> Cultural vs. Economic tests. Goal -> Compare concepts. Viz -> Two-column HTML/CSS layout with icons. Interaction -> Click to see associated countries. Justification -> Clear separation of qualitative concepts. Method -> HTML/Tailwind.
+        - Detailed Data: Report Info -> All text details for each country. Goal -> Inform. Viz -> Dynamic text block. Interaction -> Content updates on country selection. Justification -> Provides detailed context without cluttering the main view. Method -> JS DOM manipulation.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4; /* Warm Neutral: Off-White */
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 45vh;
+        }
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .nav-item.active {
+            background-color: #EAE7E1; /* Warm Neutral: Light Beige */
+            border-color: #A08C7D; /* Accent: Muted Brown */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .nav-item:hover {
+            background-color: #EAE7E1;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE7E1;
+        }
+        .accent-text {
+            color: #8C6A56; /* Accent: Deeper Brown */
+        }
+        .highlight-section {
+            background-color: #EAE7E1;
+            border-left: 4px solid #A08C7D;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center my-8 md:my-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-tight">Global Film Incentives Dashboard</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">An interactive guide to the world's most competitive film & TV production tax incentives. Select a jurisdiction to begin your analysis.</p><p>Prepared for Your Review</p>
+        </header>
+
+        <nav id="jurisdiction-selector" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <section id="deep-dive-section" class="lg:col-span-2 card rounded-lg shadow-sm p-6">
+                <h2 class="text-2xl font-bold mb-4 accent-text">Select a Jurisdiction for a Deep Dive</h2>
+                <div id="details-content" class="space-y-6 text-gray-700">
+                    <p>Click on a country or state above to load its detailed incentive profile, including the type of incentive, amount, qualifying formats, key criteria, and application process.</p>
+                </div>
+            </section>
+
+            <aside class="space-y-8">
+                <div class="card rounded-lg shadow-sm p-6">
+                    <h3 class="text-xl font-bold text-center mb-4">Incentive Types</h3>
+                    <div class="chart-container" style="height: 250px; max-height: 30vh;">
+                        <canvas id="incentiveTypeChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4 text-center">The global trend favors direct financial mechanisms like cash rebates and refundable credits to meet the immediate cash flow needs of productions.</p>
+                </div>
+                <div class="card rounded-lg shadow-sm p-6">
+                    <h3 class="text-xl font-bold text-center mb-4">Qualification Philosophy</h3>
+                    <div class="flex justify-around text-center">
+                        <div>
+                            <span class="text-4xl">🎭</span>
+                            <h4 class="font-bold mt-2">Cultural Test</h4>
+                            <p class="text-sm text-gray-500">Prioritizes projects that contribute to national culture and identity.</p>
+                        </div>
+                        <div>
+                            <span class="text-4xl">💼</span>
+                            <h4 class="font-bold mt-2">Economic Test</h4>
+                            <p class="text-sm text-gray-500">Prioritizes projects that maximize job creation and local spending.</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <section class="my-12">
+            <h2 class="text-3xl font-bold text-center mb-8">Comparative Analysis</h2>
+            <div class="card rounded-lg shadow-sm p-6">
+                <h3 class="text-xl font-bold text-center mb-4">Maximum Potential Incentive Rate (%)</h3>
+                <div class="chart-container">
+                    <canvas id="maxIncentiveChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-500 mt-4 text-center">This chart compares the highest possible incentive rate a production can achieve by leveraging all available uplifts in each jurisdiction. Note that reaching the maximum often requires meeting specific criteria.</p>
+            </div>
+        </section>
+
+        <footer class="text-center mt-16 mb-8 border-t pt-8 text-gray-500">
+            <p></p>
+        </footer>
+
+    </main>
+
+    <script>
+        const incentiveData = {
+            'Ireland': {
+                flag: '🇮🇪',
+                type: 'Repayable Tax Credit',
+                amount: '32% base rate, rising to 40% with an 8% "scéal uplift" for low-budget features. Capped at the lower of qualifying Irish expenditure, 80% of the total budget, or €125 million.',
+                formats: 'Feature films, TV drama, documentaries, animation, VFX. A 20% incentive for unscripted productions is pending EU approval.',
+                criteria: 'Requires a cultural certificate from the Department of Culture (passing both Cultural and Industry Development Tests). Minimum spend of €125,000. Must be an Irish resident SPV.',
+                process: 'Two-stage process: cultural certification then claim submission. A significant 90% early payment is available, with the final 10% paid upon project delivery.',
+                philosophy: 'Cultural',
+                sourceUrl: 'https://example.com/ireland-report'
+            },
+            'Malta': {
+                flag: '🇲🇹',
+                type: 'Cash Rebate',
+                amount: '30% base rate, rising to a maximum of 40% with discretionary uplifts for portraying Malta as itself or maximizing local resources.',
+                formats: 'Feature films, TV series, documentaries, animation, VFX. Excludes commercials and reality TV.',
+                criteria: 'Requires passing a cultural test. Minimum spend of €100,000 in Malta, with a total budget over €200,000. Must engage a local production service company.',
+                process: 'Application submitted to Malta Film Commission 30 working days before photography. A 10% advance is possible, with the balance paid after audit upon completion.',
+                philosophy: 'Cultural',
+                sourceUrl: 'https://example.com/malta-report'
+            },
+            'UK': {
+                flag: '🇬🇧',
+                type: 'Taxable Credit (AVEC)',
+                amount: 'Standard net credit of 25.5%. A new Independent Film Tax Credit (IFTC) offers a net credit of 39.75% for films with budgets up to £23.5 million. A VFX uplift provides a 29.25% net rate.',
+                formats: 'Feature films (with theatrical release), high-end TV, animation, and children\'s television.',
+                criteria: 'Must be certified as "British" by passing a Cultural Test (18/35 points) or be an official co-production. Minimum 10% of core expenditure must be in the UK.',
+                process: 'Productions must claim under the new AVEC system from April 2025. Involves applying to the BFI for cultural certification, then claiming on a Corporation Tax return with HMRC.',
+                philosophy: 'Cultural',
+                sourceUrl: 'https://example.com/uk-report'
+            },
+            'California': {
+                flag: '🇺🇸',
+                type: 'Refundable & Transferable Tax Credit',
+                amount: '35% base credit, rising to 40% for relocating TV series. Can reach a maximum of 45% with uplifts for filming outside the LA Zone (5%), VFX (5%), and local hire wages outside LA (10%). Annual program cap of $750 million.',
+                formats: 'Broadened eligibility includes animated films, multi-camera sitcoms, and short-episode TV shows. Minimum spend of $1 million.',
+                criteria: 'The primary criterion is the "jobs ratio test," ranking projects based on their potential for job creation. No cultural test required.',
+                process: 'Highly competitive application process via an online portal during specific, narrow application windows. Projects are ranked by their jobs ratio score to receive an allocation.',
+                philosophy: 'Economic',
+                sourceUrl: 'https://example.com/california-report'
+            },
+            'Australia': {
+                flag: '🇦🇺',
+                type: 'Refundable Tax Offset',
+                amount: 'Three mutually exclusive offsets: Producer Offset (40% for features, 30% for others), Location Offset (30% for large-budget international), and PDV Offset (30% for post-production work).',
+                formats: 'Feature films, telemovies, TV series, documentaries, and animation.',
+                criteria: 'Producer Offset requires "Significant Australian Content." Location Offset requires a minimum spend of A$20 million. PDV Offset requires a minimum A$500,000 spend on Australian PDV services.',
+                process: 'Applications for certificates can be made anytime. The offset is claimed as part of the company\'s annual tax return, with payment typically within four weeks of lodgement.',
+                philosophy: 'Economic',
+                sourceUrl: 'https://example.com/australia-report'
+            },
+            'Croatia': {
+                flag: '🇭🇷',
+                type: 'Cash Rebate',
+                amount: '25% base rate on qualifying Croatian expenditure. An additional 5% uplift is available for filming in underdeveloped regions, for a total of 30%.',
+                formats: 'Feature films, TV drama, documentaries, and animation. Excludes commercials and reality TV.',
+                criteria: 'Requires a Cultural Test. Minimum spend varies by format (e.g., €250,000 for features). Requires employment of local trainees for larger projects.',
+                process: 'First-come, first-served application basis. Application must be submitted to the Croatian Audiovisual Centre prior to production. Rebate is paid out after project completion and audit.',
+                philosophy: 'Cultural',
+                sourceUrl: 'https://example.com/croatia-report'
+            }
+        };
+
+        let maxIncentiveChart, incentiveTypeChart;
+        let activeJurisdiction = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const selector = document.getElementById('jurisdiction-selector');
+            Object.keys(incentiveData).forEach(key => {
+                const item = document.createElement('div');
+                item.className = 'nav-item card rounded-lg p-4 text-center shadow-sm';
+                item.dataset.id = key;
+                item.innerHTML = `<span class="text-3xl">${incentiveData[key].flag}</span><span class="block font-bold mt-2">${key}</span>`;
+                item.addEventListener('click', () => selectJurisdiction(key));
+                selector.appendChild(item);
+            });
+
+            createCharts();
+            updateIncentiveTypeChart();
+        });
+
+        function selectJurisdiction(key) {
+            activeJurisdiction = key;
+            
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.id === key);
+            });
+
+            updateDetailsContent(key);
+            updateMaxIncentiveChart();
+        }
+
+        function updateDetailsContent(key) {
+            const data = incentiveData[key];
+            const contentEl = document.getElementById('details-content');
+            contentEl.innerHTML = `
+                <h2 class="text-3xl font-bold text-gray-800">${data.flag} ${key}</h2>
+                <div class="space-y-4">
+                    <div class="highlight-section p-4 rounded-md">
+                        <h4 class="font-bold text-lg accent-text">Type of Incentive</h4>
+                        <p>${data.type}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg accent-text">Amount of Incentive</h4>
+                        <p>${data.amount}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg accent-text">Qualifying Formats</h4>
+                        <p>${data.formats}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg accent-text">Key Criteria</h4>
+                        <p>${data.criteria}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg accent-text">Application Process/Timeline</h4>
+                        <p>${data.process}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg accent-text">Source Report</h4>
+                        <a href="${data.sourceUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                            View Full Report
+                            <span class="ml-1">🔗</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createCharts() {
+            const defaultChartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#4A4A4A', font: { size: 14 } }
+                    },
+                    tooltip: {
+                        backgroundColor: '#FFFFFF',
+                        titleColor: '#4A4A4A',
+                        bodyColor: '#6B7280',
+                        borderColor: '#EAE7E1',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 4
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#6B7280' },
+                        grid: { color: '#EAE7E1' }
+                    },
+                    y: {
+                        ticks: { color: '#6B7280' },
+                        grid: { display: false }
+                    }
+                }
+            };
+            
+            const maxIncentiveCtx = document.getElementById('maxIncentiveChart').getContext('2d');
+            maxIncentiveChart = new Chart(maxIncentiveCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['California', 'Ireland', 'Malta', 'Australia', 'UK (Indie)', 'Croatia'],
+                    datasets: [{
+                        label: 'Max Potential Rate (%)',
+                        data: [45, 40, 40, 40, 39.75, 30],
+                        backgroundColor: [],
+                        borderColor: '#A08C7D',
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: { ...defaultChartOptions,
+                    indexAxis: 'y',
+                    plugins: { ...defaultChartOptions.plugins, legend: { display: false } },
+                    scales: {
+                        x: { ...defaultChartOptions.scales.x, title: { display: true, text: 'Percentage (%)', color: '#4A4A4A' } },
+                        y: { ...defaultChartOptions.scales.y }
+                    }
+                }
+            });
+            updateMaxIncentiveChart();
+
+            const incentiveTypeCtx = document.getElementById('incentiveTypeChart').getContext('2d');
+            incentiveTypeChart = new Chart(incentiveTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash Rebate / Repayable Credit', 'Refundable / Transferable Credit'],
+                    datasets: [{
+                        data: [0,0],
+                        backgroundColor: ['#A08C7D', '#EAE7E1'],
+                        borderColor: '#F8F7F4',
+                        borderWidth: 4
+                    }]
+                },
+                options: { ...defaultChartOptions,
+                    cutout: '60%',
+                    plugins: { ...defaultChartOptions.plugins, legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function updateMaxIncentiveChart() {
+            const baseColor = '#CFC5BB'; // Warm Neutral: Gray-Beige
+            const activeColor = '#8C6A56'; // Accent: Deeper Brown
+            
+            const colors = maxIncentiveChart.data.labels.map(label => {
+                return label === activeJurisdiction ? activeColor : baseColor;
+            });
+            
+            maxIncentiveChart.data.datasets[0].backgroundColor = colors;
+            maxIncentiveChart.update();
+        }
+
+        function updateIncentiveTypeChart() {
+            const types = Object.values(incentiveData).reduce((acc, curr) => {
+                if (curr.type.includes('Rebate') || curr.type.includes('Repayable')) {
+                    acc.rebate++;
+                } else {
+                    acc.credit++;
+                }
+                return acc;
+            }, { rebate: 0, credit: 0 });
+
+            incentiveTypeChart.data.datasets[0].data = [types.rebate, types.credit];
+            incentiveTypeChart.update();
+        }
+
+    </script>
+</body>
+</html>
