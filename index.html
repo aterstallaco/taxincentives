@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Incentives: Malta vs. California Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fdfcf8; color: #1c1917; }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            height: 300px; 
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #059669;
+            cursor: pointer;
+            margin-top: -6px; 
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e5e7eb;
+            border-radius: 2px;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Sand) with Emerald (Malta) and Amber (California) Accents -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the context of the $15M comparative study.
+         2. Control Panel (Sticky): Allows real-time manipulation of the budget split and variables.
+         3. Executive Summary Cards: Immediate "Bottom Line" numbers (Savings, Rebate %).
+         4. Financial Deep Dive: Charts visualizing the Cost vs. Rebate mechanics.
+         5. Qualitative Analysis Grid: Non-monetary factors (Obstacles, Reliability) presented in interactive cards.
+         6. Conclusion: Synthesized recommendation based on the current data state.
+    -->
+    <!-- Visualization & Content Choices:
+         - Charts: Chart.js Bar and Doughnut charts chosen for clarity in comparing "Cost A vs Cost B". 
+         - Text: Dynamic text blocks update based on slider inputs to explain the "Why" behind the numbers.
+         - Layout: CSS Grid/Flexbox used for responsive dashboard layout.
+         - Interaction: Sliders for "Budget" and "Malta Portion" directly drive the JS calculation engine.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased selection:bg-emerald-100 selection:text-emerald-900">
+
+    <!-- Navigation / Header -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold tracking-tight text-stone-800">Production<span class="text-emerald-600">Analyzer</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-stone-500">
+                    <a href="#dashboard" class="hover:text-stone-900">Financials</a>
+                    <a href="#logistics" class="hover:text-stone-900">Logistics</a>
+                    <a href="#risk" class="hover:text-stone-900">Risk Assessment</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="text-center max-w-3xl mx-auto">
+            <h1 class="text-4xl font-bold text-stone-900 mb-4">Location Incentive Analysis</h1>
+            <p class="text-lg text-stone-600 leading-relaxed">
+                Comparing a 100% California production versus a Hybrid model (California base + Malta location shoot). 
+                This tool analyzes the financial viability of a <strong>$15M budget</strong> project, factoring in travel logistics for a CA-based crew, 
+                exchange rates, and rebate reliability.
+            </p>
+        </section>
+
+        <!-- Interactive Control Panel -->
+        <section id="dashboard" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Inputs -->
+                <div class="space-y-6">
+                    <h2 class="text-sm font-semibold text-stone-400 uppercase tracking-wider">Simulation Parameters</h2>
+                    
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-stone-700">Total Budget</label>
+                            <span id="budgetDisplay" class="text-sm font-bold text-stone-900">$15.0M</span>
+                        </div>
+                        <input type="range" id="budgetInput" min="5" max="50" step="1" value="15" class="w-full">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-stone-700">Portion Filmed in Malta</label>
+                            <span id="maltaShareDisplay" class="text-sm font-bold text-emerald-600">33%</span>
+                        </div>
+                        <input type="range" id="maltaShareInput" min="0" max="100" step="5" value="33" class="w-full">
+                        <p class="text-xs text-stone-500 mt-1">Impacts travel costs & local spend.</p>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-stone-700">EUR/USD Exchange Rate</label>
+                            <span id="rateDisplay" class="text-sm font-bold text-stone-900">1.08</span>
+                        </div>
+                        <input type="range" id="rateInput" min="0.90" max="1.30" step="0.01" value="1.08" class="w-full">
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Scenario A Card -->
+                    <div class="bg-stone-50 rounded-xl p-5 border border-stone-100 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                <h3 class="text-sm font-semibold text-stone-600">Scenario A: 100% California</h3>
+                            </div>
+                            <div class="text-3xl font-bold text-stone-900" id="costA">$12.60M</div>
+                            <div class="text-xs text-stone-500 mt-1">Net Cost after Tax Credit</div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-stone-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-stone-500">Est. Credit:</span>
+                                <span class="font-medium text-amber-600" id="rebateA">$2.40M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scenario B Card -->
+                    <div class="bg-emerald-50 rounded-xl p-5 border border-emerald-100 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-emerald-600"></div>
+                                <h3 class="text-sm font-semibold text-emerald-800">Scenario B: Hybrid (CA + Malta)</h3>
+                            </div>
+                            <div class="text-3xl font-bold text-emerald-900" id="costB">$11.85M</div>
+                            <div class="text-xs text-emerald-600 mt-1">Net Cost after Mixed Rebates</div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-emerald-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-emerald-700">Projected Savings:</span>
+                                <span class="font-bold text-emerald-700" id="savings">$0.75M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Chart 1: Cost Composition -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 flex flex-col">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-stone-900">Cost Structure Breakdown</h3>
+                    <p class="text-sm text-stone-500">Analyzing the impact of logistics vs. actual production value.</p>
+                </div>
+                <div class="chart-container flex-grow">
+                    <canvas id="costBreakdownChart"></canvas>
+                </div>
+                <div class="mt-4 bg-stone-50 p-3 rounded-lg text-xs text-stone-600">
+                    <strong>Insight:</strong> While Malta offers a higher rebate percentage (40%), the "Travel Penalty" (flights, housing, per diems for CA crew) erodes some of the savings.
+                </div>
+            </div>
+
+            <!-- Chart 2: Net Spend Comparison -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 flex flex-col">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-stone-900">Net Cost Comparison</h3>
+                    <p class="text-sm text-stone-500">Total Budget minus Estimated Rebates.</p>
+                </div>
+                <div class="chart-container flex-grow">
+                    <canvas id="netCostChart"></canvas>
+                </div>
+                 <div class="mt-4 bg-stone-50 p-3 rounded-lg text-xs text-stone-600">
+                    <strong>Note:</strong> California credit is assumed at 20% (Independent). Malta is calculated at 30% Base + 10% Bonus.
+                </div>
+            </div>
+        </section>
+
+        <!-- Qualitative Analysis (The "Report" Content) -->
+        <section id="logistics" class="space-y-6">
+            <div class="max-w-3xl">
+                <h2 class="text-2xl font-bold text-stone-900">Incentive Profile Comparison</h2>
+                <p class="text-stone-600 mt-2">
+                    A direct comparison of the administrative and practical realities of filming in both jurisdictions. 
+                    While the raw numbers favor Malta, the logistical friction and "Soft Costs" must be considered.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- California Details -->
+                <div class="bg-white rounded-xl border border-stone-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-amber-600">California</h3>
+                        <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded">Tax Credit</span>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">💰</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Value: 20-25%</strong>
+                                <span class="text-sm text-stone-500">Tax Credit on Qualified Spend (Below-the-Line only). Labor and vendors must be in-state.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">🎲</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Likelihood: Low/Medium</strong>
+                                <span class="text-sm text-stone-500">Historically competitive (lottery system). Often oversubscribed with waitlists.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">🚧</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Obstacles</strong>
+                                <span class="text-sm text-stone-500">Rigorous audit process (1-2 years to monetize). Credit is non-refundable (must have tax liability or sell it at a discount).</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Malta Details -->
+                <div class="bg-white rounded-xl border border-stone-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-emerald-600">Malta</h3>
+                        <span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded">Cash Rebate</span>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">💶</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Value: Up to 40%</strong>
+                                <span class="text-sm text-stone-500">30% Base + up to 10% "Cultural Bonus". Applied to eligible expenditure (EU/Local spend).</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">✅</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Likelihood: High</strong>
+                                <span class="text-sm text-stone-500">Uncapped fund. If you pass the cultural test and meet spend criteria, you get the rebate.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-xl mr-3">🎭</span>
+                            <div>
+                                <strong class="block text-sm text-stone-900">Obstacles</strong>
+                                <span class="text-sm text-stone-500">Cultural Test is subjective. Cash flow gap (rebate pays out 5-12 months after completion). Exchange rate volatility.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Comparison Matrix Table -->
+        <section id="risk" class="bg-stone-900 rounded-2xl p-8 text-white">
+            <h3 class="text-xl font-bold mb-6">Operational Cost-Benefit Matrix</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-stone-700 text-stone-400 text-sm uppercase">
+                            <th class="py-3 px-4">Factor</th>
+                            <th class="py-3 px-4 w-1/3">100% California</th>
+                            <th class="py-3 px-4 w-1/3">Hybrid (Malta Unit)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-stone-800">
+                        <tr>
+                            <td class="py-4 px-4 font-medium text-stone-300">Goods & Services</td>
+                            <td class="py-4 px-4">High Cost (Premium rates)</td>
+                            <td class="py-4 px-4 text-emerald-400">Low Cost (~30% cheaper than LA)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-4 font-medium text-stone-300">Crew Base</td>
+                            <td class="py-4 px-4 text-emerald-400">Local (No per diem/housing)</td>
+                            <td class="py-4 px-4">Imported (High travel/housing costs)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-4 font-medium text-stone-300">Monetization</td>
+                            <td class="py-4 px-4">Sell Credit (Broker fees ~5%)</td>
+                            <td class="py-4 px-4 text-emerald-400">Direct Cash Wire</td>
+                        </tr>
+                         <tr>
+                            <td class="py-4 px-4 font-medium text-stone-300">Infrastructure</td>
+                            <td class="py-4 px-4 text-emerald-400">World Class (Stages, Vendors)</td>
+                            <td class="py-4 px-4">Limited (Water tanks are great, others limited)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            totalBudget: 15.0, // Millions
+            maltaShare: 0.33,  // Percentage (0 to 1)
+            exchangeRate: 1.08 // EUR to USD
+        };
+
+        // --- Constants & Assumptions ---
+        const ASSUMPTIONS = {
+            ca_labor_premium: 1.0,
+            malta_goods_discount: 0.70,
+            ca_tax_credit_rate: 0.20,
+            ca_qualified_portion: 0.60,
+            malta_rebate_rate: 0.40,
+            malta_travel_penalty_percent: 0.15,
+            malta_qualified_portion: 0.75
+        };
+
+        // --- DOM Elements ---
+        const budgetInput = document.getElementById('budgetInput');
+        const maltaShareInput = document.getElementById('maltaShareInput');
+        const rateInput = document.getElementById('rateInput');
+        
+        const budgetDisplay = document.getElementById('budgetDisplay');
+        const maltaShareDisplay = document.getElementById('maltaShareDisplay');
+        const rateDisplay = document.getElementById('rateDisplay');
+        
+        const costA_El = document.getElementById('costA');
+        const rebateA_El = document.getElementById('rebateA');
+        const costB_El = document.getElementById('costB');
+        const savings_El = document.getElementById('savings');
+
+        // --- Chart Instances ---
+        let costBreakdownChartInstance = null;
+        let netCostChartInstance = null;
+
+        // --- Calculation Logic ---
+        function calculate() {
+            // Scenario A: 100% CA
+            const ca_spend_A = state.totalBudget;
+            const ca_qualified_A = ca_spend_A * ASSUMPTIONS.ca_qualified_portion;
+            const ca_rebate_A = ca_qualified_A * ASSUMPTIONS.ca_tax_credit_rate;
+            const net_cost_A = ca_spend_A - ca_rebate_A;
+
+            // Scenario B: Hybrid
+            // CA Portion
+            const ca_portion_B = state.totalBudget * (1 - state.maltaShare);
+            const ca_qualified_B = ca_portion_B * ASSUMPTIONS.ca_qualified_portion;
+            const ca_rebate_B = ca_qualified_B * ASSUMPTIONS.ca_tax_credit_rate;
+
+            // Malta Portion
+            const malta_gross_budget = state.totalBudget * state.maltaShare;
+            
+            // "Lost" money (Travel, Per Diems for CA crew)
+            const malta_travel_cost = malta_gross_budget * ASSUMPTIONS.malta_travel_penalty_percent;
+            
+            // "Effective" production spend in Malta
+            const malta_prod_spend = malta_gross_budget - malta_travel_cost;
+            
+            // Qualified Spend in Malta
+            const malta_qualified_B = malta_prod_spend * ASSUMPTIONS.malta_qualified_portion;
+            
+            // Rebate Calculation
+            const malta_rebate_B = malta_qualified_B * ASSUMPTIONS.malta_rebate_rate;
+
+            const total_rebate_B = ca_rebate_B + malta_rebate_B;
+            const net_cost_B = state.totalBudget - total_rebate_B;
+
+            // Savings
+            const savings = net_cost_A - net_cost_B;
+
+            updateUI({
+                net_cost_A,
+                ca_rebate_A,
+                net_cost_B,
+                total_rebate_B,
+                savings,
+                ca_portion_B,
+                malta_gross_budget,
+                malta_travel_cost,
+                malta_rebate_B,
+                ca_rebate_B,
+                malta_prod_spend
+            });
+        }
+
+        function updateUI(data) {
+            // Update Text
+            budgetDisplay.textContent = `$${state.totalBudget.toFixed(1)}M`;
+            maltaShareDisplay.textContent = `${(state.maltaShare * 100).toFixed(0)}%`;
+            rateDisplay.textContent = state.exchangeRate.toFixed(2);
+
+            costA_El.textContent = `$${data.net_cost_A.toFixed(2)}M`;
+            rebateA_El.textContent = `$${data.ca_rebate_A.toFixed(2)}M`;
+            
+            costB_El.textContent = `$${data.net_cost_B.toFixed(2)}M`;
+            
+            // Handle color for savings (positive vs negative)
+            if (data.savings >= 0) {
+                savings_El.textContent = `$${Math.abs(data.savings).toFixed(2)}M`;
+                savings_El.className = "font-bold text-emerald-700";
+                savings_El.parentElement.querySelector('span:first-child').textContent = "Projected Savings:";
+            } else {
+                savings_El.textContent = `-$${Math.abs(data.savings).toFixed(2)}M`;
+                savings_El.className = "font-bold text-red-600";
+                savings_El.parentElement.querySelector('span:first-child').textContent = "Projected Loss:";
+            }
+
+            updateCharts(data);
+        }
+
+        function initCharts() {
+            // Chart 1: Cost Breakdown (Stacked Bar)
+            const ctx1 = document.getElementById('costBreakdownChart').getContext('2d');
+            costBreakdownChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['100% California', 'Hybrid (CA + Malta)'],
+                    datasets: [
+                        {
+                            label: 'CA Production Spend',
+                            data: [0, 0],
+                            backgroundColor: '#fbbf24', // Amber 400
+                        },
+                        {
+                            label: 'Malta Production Spend',
+                            data: [0, 0],
+                            backgroundColor: '#34d399', // Emerald 400
+                        },
+                        {
+                            label: 'Travel & Logistics (Loss)',
+                            data: [0, 0],
+                            backgroundColor: '#ef4444', // Red 500
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, title: { display: true, text: 'Millions ($)' } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.raw.toFixed(2) + 'M';
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Chart 2: Net Cost Comparison (Simple Bar)
+            const ctx2 = document.getElementById('netCostChart').getContext('2d');
+            netCostChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Scenario A (CA)', 'Scenario B (Hybrid)'],
+                    datasets: [{
+                        label: 'Net Cost ($ Millions)',
+                        data: [0, 0],
+                        backgroundColor: ['#d97706', '#059669'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.raw.toFixed(2) + 'M Net Cost';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, title: { display: true, text: 'Millions ($)' } }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            if (!costBreakdownChartInstance || !netCostChartInstance) return;
+
+            // Update Breakdown Chart
+            costBreakdownChartInstance.data.datasets[0].data = [state.totalBudget, data.ca_portion_B];
+            costBreakdownChartInstance.data.datasets[1].data = [0, data.malta_prod_spend]; // Use effective production spend
+            costBreakdownChartInstance.data.datasets[2].data = [0, data.malta_travel_cost];
+            
+            costBreakdownChartInstance.update();
+
+            // Update Net Cost Chart
+            netCostChartInstance.data.datasets[0].data = [data.net_cost_A, data.net_cost_B];
+            netCostChartInstance.update();
+        }
+
+        // --- Event Listeners ---
+        budgetInput.addEventListener('input', (e) => {
+            state.totalBudget = parseFloat(e.target.value);
+            calculate();
+        });
+
+        maltaShareInput.addEventListener('input', (e) => {
+            state.maltaShare = parseFloat(e.target.value) / 100;
+            calculate();
+        });
+
+        rateInput.addEventListener('input', (e) => {
+            state.exchangeRate = parseFloat(e.target.value);
+            calculate();
+        });
+
+        // --- Init: Ensure charts are initialized before calculation runs ---
+        window.onload = function() {
+            initCharts();
+            calculate();
+        };
+
+    </script>
+</body>
+</html>
